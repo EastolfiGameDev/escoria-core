@@ -297,15 +297,28 @@ func _input(event: InputEvent) -> void:
 				emit_signal("mouse_right_clicked_item", self, event)
 
 
+# Find the first animation player path in all of the children with full depth
+func find_animation_node_path(nodes: Array) -> String:
+	var node_path = ""
+
+	for child in nodes:
+		if child is AnimatedSprite or \
+				child is AnimationPlayer:
+			node_path = child.get_path()
+		else:
+			node_path = find_animation_node_path(child.get_children())
+
+	if node_path != "":
+		break
+
+	return node_path
+
 # Return the animation player node
 func get_animation_player() -> Node:
 	if _animation_player == null:
 		var player_node_path = animation_player_node
 		if player_node_path == "":
-			for child in self.get_children():
-				if child is AnimatedSprite or \
-						child is AnimationPlayer:
-					player_node_path = child.get_path()
+			player_node_path = find_animation_node_path(self.get_children())
 		if not has_node(player_node_path):
 			escoria.logger.warning(
 				"Can not find node at path %s" % player_node_path
